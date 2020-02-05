@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFIDAttendance", "RFIDAttendance\RFIDAttendance.csproj", "{3F25CF89-A52D-4BA5-A28F-A4836D94069D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3F25CF89-A52D-4BA5-A28F-A4836D94069D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F25CF89-A52D-4BA5-A28F-A4836D94069D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F25CF89-A52D-4BA5-A28F-A4836D94069D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F25CF89-A52D-4BA5-A28F-A4836D94069D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {469938EC-F9F6-4291-B317-5365BAFF0D93}
+	EndGlobalSection
+EndGlobal
