@@ -40,7 +40,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="AttendaceStatus" class="control-label"></label>
-                <input asp-for="AttendaceStatus" class="form-control" />
+                <select asp-for="AttendaceStatus" class="form-control">
+                    <option disabled selected>Select Status</option>
+                    <option>PRESENT</option>
+                    <option>TARDY</option>
+                    <option>ABSENT</option>
+                </select>
                 <span asp-validation-for="AttendaceStatus" class="text-danger"></span>
             </div>
             <div class="form-group">

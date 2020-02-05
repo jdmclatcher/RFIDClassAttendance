@@ -20,9 +20,29 @@ namespace RFIDAttendance.Controllers
         }
 
         // GET: Students
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder)
         {
-            return View(await _context.Student.ToListAsync());
+            // sorting with hyperlinks
+            ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewBag.IDSortParm = sortOrder == "ID" ? "ID_desc" : "ID";
+            var students = from s in _context.Student
+                           select s;
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    students = students.OrderByDescending(s => s.Name);
+                    break;
+                case "ID":
+                    students = students.OrderBy(s => s.StudentID);
+                    break;
+                case "ID_desc":
+                    students = students.OrderByDescending(s => s.StudentID);
+                    break;
+                default:
+                    students = students.OrderBy(s => s.Name);
+                    break;
+            }
+            return View(/*await _context.Student.ToListAsync()*/ await students.ToListAsync());
         }
 
         // GET: Students/Details/5
