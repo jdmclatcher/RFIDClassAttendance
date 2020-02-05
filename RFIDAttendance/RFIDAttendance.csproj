@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Platforms>AnyCPU;x64;x86;ARM;ARM64</Platforms>
+    <!--<RuntimeIdentifier>win-arm</RuntimeIdentifier>-->
   </PropertyGroup>
 
   <ItemGroup>
