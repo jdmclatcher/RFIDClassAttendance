@@ -4,7 +4,35 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Class List</h1>
+<h1>Class List</h1> @*TODO append period based on filters*@
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.ActionLink("Period 1", "Index", new { sortOrder = ViewBag.PeriodOneFilter })
+            </th>
+            <th>
+                @Html.ActionLink("Period 2", "Index", new { sortOrder = ViewBag.PeriodTwoFilter })
+            </th>
+            <th>
+                @Html.ActionLink("Period 3", "Index", new { sortOrder = ViewBag.PeriodThreeFilter })
+            </th>
+            <th>
+                @Html.ActionLink("Period 4", "Index", new { sortOrder = ViewBag.PeriodFourFilter })
+            </th>
+            <th>
+                @Html.ActionLink("Period 5", "Index", new { sortOrder = ViewBag.PeriodFiveFilter })
+            </th>
+            <th>
+                @Html.ActionLink("Period 6", "Index", new { sortOrder = ViewBag.PeriodSixFilter })
+            </th>
+            <th>
+                @Html.ActionLink("All Periods", "Index", new { sortOrder = ViewBag.PeriodAllFilter })
+            </th>
+        </tr>
+    </thead>
+</table>
 
 <p>
     <a asp-action="Create">Add New Student</a>
@@ -12,8 +40,8 @@
 
 @using (Html.BeginForm())
 {
-    <p>
-        Find by Name or ID: @Html.TextBox("Search")
+    <p style="max-width: 25%">
+        Find by Name or ID: @Html.TextBox("Search", null, new { @class = "form-control", @placeholder = "Search" })
         <input class="btn btn-outline-primary" type="submit" value="Search" />
     </p>
     <p>
@@ -28,10 +56,13 @@
     <thead>
         <tr>
             <th>
-                @Html.ActionLink("Student ID", "Index", new { sortOrder = ViewBag.IDSortParm })
+                @Html.ActionLink("Name", "Index", new { sortOrder = ViewBag.NameSortParm })
             </th>
             <th>
-                @Html.ActionLink("Name", "Index", new { sortOrder = ViewBag.NameSortParm })
+                @Html.DisplayNameFor(model => model.StudentID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Period)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.InClass)
@@ -51,31 +82,34 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.StudentID)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.InClass)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TimeLastCheckedIn)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TimeLastCheckedOut)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AttendaceStatus)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StudentID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Period)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InClass)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TimeLastCheckedIn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TimeLastCheckedOut)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AttendaceStatus)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
         }
     </tbody>
 </table>

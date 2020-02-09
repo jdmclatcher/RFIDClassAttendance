@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,13 +10,16 @@ namespace RFIDAttendance.Models
         // unique ID needed for database
         public int Id { get; set; }
         
-        [Required(ErrorMessage = "A Student ID is required"), Range(1000000000, 4000000000, ErrorMessage = "Please enter a valid Student ID")]
+        [Required(ErrorMessage = "A Student ID is required."), Range(1000000000, 4000000000, ErrorMessage = "Please enter a valid Student ID.")]
         public long StudentID { get; set; }
         
-        [Required(ErrorMessage = "A {0} is required"), StringLength(100, MinimumLength = 1)]
+        [Required(ErrorMessage = "A {0} is required."), StringLength(100, MinimumLength = 1)]
         public string Name { get; set; }
-        // status that marks if currently in class or not
 
+        [Required(ErrorMessage = "A {0} is required.")]
+        public string Period { get; set; }
+
+        // status that marks if currently in class or not
         [Display(Name = "In Class?")]
         public bool InClass { get; set; } = false;
         

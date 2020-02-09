@@ -18,18 +18,17 @@ namespace RFIDAttendance.Controllers
             _context = context;
         }
 
-        // Button event handling
+        // Check in button event handling
         public IActionResult CheckIn()
         {
             long testID = 2000112143;
-            // code to run when button pressed
-            // TODO optimize this
+            // runs when button pressed
             var students = from s in _context.Student select s;
             foreach(Student s in students)
             {
                 if(s.StudentID == testID/*Convert.ToInt64(search)*/)
                 {
-                    // TODO: update of tardy, present, absent with bell schedule
+                    // TODO: update of tardy, present, absent with bell schedule -- BASED ON STUDENT PERIOD
                     // PRESENT - if checking in by late bell
                     // TARDY - will be changed from ABSENT to tardy when 
                     // ABSENT - will be the default when late bell rings and havent checked in
@@ -43,7 +42,7 @@ namespace RFIDAttendance.Controllers
                         // check if has checked in before
                         if (!s.TimeLastCheckedIn.HasValue)
                         {
-                            // mark tardy if after late bell
+                            // mark tardy if after late bell and before early bell of next period
                             if((Convert.ToInt32(DateTime.Now.Hour) > 8) && (Convert.ToInt32(DateTime.Now.Minute) > 4))
                             {
                                 s.AttendaceStatus = "TARDY";
@@ -77,44 +76,69 @@ namespace RFIDAttendance.Controllers
             _context.SaveChanges(); // update Db
             return RedirectToAction("Index");
         }
-        
+
         // GET: Students
         public async Task<IActionResult> Index(string sortOrder, string search)
         {
-            // sorting with hyperlinks
+            // period filtering
+            //ViewBag.PeriodOneFilter = "1";
+            //ViewBag.PeriodTwoFilter = "2";
+            //ViewBag.PeriodThreeFilter = "3";
+            //ViewBag.PeriodFourFilter = "4";
+            //ViewBag.PeriodFiveFilter = "5";
+            //ViewBag.PeriodSixFilter = "6";
+            //ViewBag.PeriodAllFilter = "";
+
+            // sorting with hyperlinks - append on top of period
             ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            ViewBag.IDSortParm = sortOrder == "ID" ? "ID_desc" : "ID";
-            ViewBag.StatusSortParm = sortOrder == "present" ? "present_desc" : "present";
+            ViewBag.StatusSortParm = sortOrder == "status" ? "status_desc" : "status";
+
             var students = from s in _context.Student
                            select s;
+
             // search by name or student ID
             if (!String.IsNullOrEmpty(search))
             {
                 students = students.Where(s => s.Name.Contains(search)
                                        || s.StudentID.ToString().Contains(search));
             }
-            // sort based on input from Index
+
             switch (sortOrder)
             {
                 case "name_desc":
                     students = students.OrderByDescending(s => s.Name);
                     break;
-                case "ID":
-                    students = students.OrderBy(s => s.StudentID);
-                    break;
-                case "ID_desc":
-                    students = students.OrderByDescending(s => s.StudentID);
-                    break;
-                case "present":
+                case "status":
                     students = students.OrderBy(s => s.AttendaceStatus);
                     break;
-                case "present_desc":
+                case "status_desc":
                     students = students.OrderByDescending(s => s.AttendaceStatus);
                     break;
-                default:
+                default:  // name ascending 
                     students = students.OrderBy(s => s.Name);
                     break;
             }
+            //if (!String.IsNullOrEmpty(sortOrder))
+            //{
+            //    students = students.Where(s => s.Period.Contains(sortOrder));
+
+            //    //if (sortOrder.Contains("name_desc"))
+            //    //{
+            //    //    students = students.OrderByDescending(s => s.Name);
+            //    //}
+            //    //else if (sortOrder.Contains("status"))
+            //    //{
+            //    //    students = students.OrderBy(s => s.AttendaceStatus);
+            //    //}
+            //    //else if (sortOrder.Contains("status_desc"))
+            //    //{
+            //    //    students = students.OrderByDescending(s => s.AttendaceStatus);
+            //    //}
+            //    //else
+            //    //{
+            //    //    students = students.OrderBy(s => s.Name);
+            //    //}
+            //}
             return View(await students.ToListAsync());
         }
 
@@ -147,7 +171,7 @@ namespace RFIDAttendance.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,StudentID,Name,InClass,TimeLastCheckedIn,TimeLastCheckedOut,AttendaceStatus")] Student student)
+        public async Task<IActionResult> Create([Bind("Id,StudentID,Name,Period,InClass,TimeLastCheckedIn,TimeLastCheckedOut,AttendaceStatus")] Student student)
         {
             if (ModelState.IsValid)
             {
@@ -179,7 +203,7 @@ namespace RFIDAttendance.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,StudentID,Name,InClass,TimeLastCheckedIn,TimeLastCheckedOut,AttendaceStatus")] Student student)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,StudentID,Name,Period,InClass,TimeLastCheckedIn,TimeLastCheckedOut,AttendaceStatus")] Student student)
         {
             if (id != student.Id)
             {

@@ -21,6 +21,19 @@
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label asp-for="Period" class="control-label"></label>
+                <select asp-for="Period" class="form-control">
+                    <option disabled selected>Select Period</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                </select>
+                <span asp-validation-for="Period" class="text-danger"></span>
+            </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
                     <input class="form-check-input" asp-for="InClass" /> @Html.DisplayNameFor(model => model.InClass)
