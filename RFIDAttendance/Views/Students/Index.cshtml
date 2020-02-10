@@ -4,33 +4,36 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Class List</h1> @*TODO append period based on filters*@
+<h1>Class List - @(ViewBag.CurrentFilter == null ? "All Periods" : ViewBag.CurrentFilter)</h1> @*TODO append period based on filters (use ViewBag)*@
 
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                @Html.ActionLink("Period 1", "Index", new { sortOrder = ViewBag.PeriodOneFilter })
-            </th>
-            <th>
-                @Html.ActionLink("Period 2", "Index", new { sortOrder = ViewBag.PeriodTwoFilter })
-            </th>
-            <th>
-                @Html.ActionLink("Period 3", "Index", new { sortOrder = ViewBag.PeriodThreeFilter })
-            </th>
-            <th>
-                @Html.ActionLink("Period 4", "Index", new { sortOrder = ViewBag.PeriodFourFilter })
-            </th>
-            <th>
-                @Html.ActionLink("Period 5", "Index", new { sortOrder = ViewBag.PeriodFiveFilter })
-            </th>
-            <th>
-                @Html.ActionLink("Period 6", "Index", new { sortOrder = ViewBag.PeriodSixFilter })
-            </th>
-            <th>
-                @Html.ActionLink("All Periods", "Index", new { sortOrder = ViewBag.PeriodAllFilter })
-            </th>
-        </tr>
+        @using (Html.BeginForm())
+        {
+            <tr>
+                <th>
+                    <button class="btn btn-outline-secondary" name="link" value="1" asp-action="FilterPeriod">Period 1</button>
+                </th>
+                <th>
+                    <button class="btn btn-outline-secondary" name="link" value="2" asp-action="FilterPeriod">Period 2</button>
+                </th>
+                <th>
+                    <button class="btn btn-outline-secondary" name="link" value="3" asp-action="FilterPeriod">Period 3</button>
+                </th>
+                <th>
+                    <button class="btn btn-outline-secondary" name="link" value="4" asp-action="FilterPeriod">Period 4</button>
+                </th>
+                <th>
+                    <button class="btn btn-outline-secondary" name="link" value="5" asp-action="FilterPeriod">Period 5</button>
+                </th>
+                <th>
+                    <button class="btn btn-outline-secondary" name="link" value="6" asp-action="FilterPeriod">Period 6</button>
+                </th>
+                <th>
+                    <button class="btn btn-outline-secondary" name="link" value="" asp-action="FilterPeriod">All Periods</button>
+                </th>
+            </tr>
+        }
     </thead>
 </table>
 

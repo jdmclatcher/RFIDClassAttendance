@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RFIDAttendance.Data;
 using RFIDAttendance.Models;
@@ -12,21 +11,59 @@ namespace RFIDAttendance.Controllers
     public class StudentsController : Controller
     {
         private readonly StudentDbContext _context;
-
+        
         public StudentsController(StudentDbContext context)
         {
             _context = context;
+            ViewBag.CurrentFilter = "All Periods";
+        }
+
+        public IActionResult FilterPeriod(string link)
+        {
+            var filteredStudents = from s in _context.Student select s;
+            // select only the correct period from db
+            switch (link)
+            {
+                case "1":
+                    filteredStudents = filteredStudents.Where(s => s.Period.Contains("1"));
+                    ViewBag.CurrentFilter = "Period 1";
+                    break;
+                case "2":
+                    filteredStudents = filteredStudents.Where(s => s.Period.Contains("2"));
+                    ViewBag.CurrentFilter = "Period 2";
+                    break;
+                case "3":
+                    filteredStudents = filteredStudents.Where(s => s.Period.Contains("3"));
+                    ViewBag.CurrentFilter = "Period 3";
+                    break;
+                case "4":
+                    filteredStudents = filteredStudents.Where(s => s.Period.Contains("4"));
+                    ViewBag.CurrentFilter = "Period 4";
+                    break;
+                case "5":
+                    filteredStudents = filteredStudents.Where(s => s.Period.Contains("5"));
+                    ViewBag.CurrentFilter = "Period 5";
+                    break;
+                case "6":
+                    filteredStudents = filteredStudents.Where(s => s.Period.Contains("6"));
+                    ViewBag.CurrentFilter = "Period 6";
+                    break;
+                default:
+                    ViewBag.CurrentFilter = "All Periods";
+                    break;
+            }
+            return View("Index", filteredStudents);
         }
 
         // Check in button event handling
         public IActionResult CheckIn()
         {
             long testID = 2000112143;
-            // runs when button pressed
             var students = from s in _context.Student select s;
             foreach(Student s in students)
             {
-                if(s.StudentID == testID/*Convert.ToInt64(search)*/)
+                System.Diagnostics.Debug.WriteLine(s);
+                if (s.StudentID == testID/*Convert.ToInt64(search)*/)
                 {
                     // TODO: update of tardy, present, absent with bell schedule -- BASED ON STUDENT PERIOD
                     // PRESENT - if checking in by late bell
@@ -80,22 +117,13 @@ namespace RFIDAttendance.Controllers
         // GET: Students
         public async Task<IActionResult> Index(string sortOrder, string search)
         {
-            // period filtering
-            //ViewBag.PeriodOneFilter = "1";
-            //ViewBag.PeriodTwoFilter = "2";
-            //ViewBag.PeriodThreeFilter = "3";
-            //ViewBag.PeriodFourFilter = "4";
-            //ViewBag.PeriodFiveFilter = "5";
-            //ViewBag.PeriodSixFilter = "6";
-            //ViewBag.PeriodAllFilter = "";
-
             // sorting with hyperlinks - append on top of period
             ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewBag.StatusSortParm = sortOrder == "status" ? "status_desc" : "status";
 
-            var students = from s in _context.Student
-                           select s;
+            var students = from s in _context.Student select s;
 
+            // TOFIX: searching won't work immediately after filtering (link still active)
             // search by name or student ID
             if (!String.IsNullOrEmpty(search))
             {
@@ -118,27 +146,6 @@ namespace RFIDAttendance.Controllers
                     students = students.OrderBy(s => s.Name);
                     break;
             }
-            //if (!String.IsNullOrEmpty(sortOrder))
-            //{
-            //    students = students.Where(s => s.Period.Contains(sortOrder));
-
-            //    //if (sortOrder.Contains("name_desc"))
-            //    //{
-            //    //    students = students.OrderByDescending(s => s.Name);
-            //    //}
-            //    //else if (sortOrder.Contains("status"))
-            //    //{
-            //    //    students = students.OrderBy(s => s.AttendaceStatus);
-            //    //}
-            //    //else if (sortOrder.Contains("status_desc"))
-            //    //{
-            //    //    students = students.OrderByDescending(s => s.AttendaceStatus);
-            //    //}
-            //    //else
-            //    //{
-            //    //    students = students.OrderBy(s => s.Name);
-            //    //}
-            //}
             return View(await students.ToListAsync());
         }
 
