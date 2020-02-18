@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using RFIDAttendance.Data;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 
 namespace RFIDAttendance
 {
@@ -26,7 +28,10 @@ namespace RFIDAttendance
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.KnownProxies.Add(IPAddress.Parse("10.0.0.100"));
+            });
             services.AddDbContext<StudentDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("StudentDbContext"))
             );
@@ -45,6 +50,10 @@ namespace RFIDAttendance
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+            });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
