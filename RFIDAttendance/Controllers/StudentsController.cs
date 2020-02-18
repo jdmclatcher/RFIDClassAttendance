@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * Jonathan McLatcher
+ * RFID Class Attendance
+ * 2020
+ */
+
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +22,18 @@ namespace RFIDAttendance.Controllers
         {
             _context = context;
             ViewBag.CurrentFilter = "All Periods";
+            // TODO: update period view based on time
+            // CheckPeriod();
         }
+
+        //private IActionResult CheckPeriod()
+        //{
+        //    string index = "";
+
+        //    // change period based on time
+
+        //    return FilterPeriod(index);
+        //}
 
         public IActionResult FilterPeriod(string link)
         {
@@ -56,14 +73,13 @@ namespace RFIDAttendance.Controllers
         }
 
         // Check in button event handling
-        public IActionResult CheckIn()
+        public IActionResult CheckIn(long studentID)
         {
-            long testID = 2000112143;
             var students = from s in _context.Student select s;
             foreach(Student s in students)
             {
                 System.Diagnostics.Debug.WriteLine(s);
-                if (s.StudentID == testID/*Convert.ToInt64(search)*/)
+                if (s.StudentID == studentID/*Convert.ToInt64(search)*/)
                 {
                     // TODO: update of tardy, present, absent with bell schedule -- BASED ON STUDENT PERIOD
                     // PRESENT - if checking in by late bell
