@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using RFIDAttendance.Data;
 using RFIDAttendance.Models;
 
@@ -23,17 +24,17 @@ namespace RFIDAttendance.Controllers
             _context = context;
             ViewBag.CurrentFilter = "All Periods";
             // TODO: update period view based on time
-            // CheckPeriod();
+            CheckPeriod();
         }
 
-        //private IActionResult CheckPeriod()
-        //{
-        //    string index = "";
+        private IActionResult CheckPeriod()
+        {
+            string index = "";
+            // change period based on time
+            
 
-        //    // change period based on time
-
-        //    return FilterPeriod(index);
-        //}
+            return FilterPeriod(index);
+        }
 
         public IActionResult FilterPeriod(string link)
         {
@@ -284,6 +285,15 @@ namespace RFIDAttendance.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        [Route("api/[controller]")]
+        // POST: api/API
+        [HttpPost]
+        public void Post([FromBody] JArray body)
+        {
+            CheckIn(body.First().SelectToken("studentID").Value<long>());
+        }
+
 
         private bool StudentExists(int id)
         {
