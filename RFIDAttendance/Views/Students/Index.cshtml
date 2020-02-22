@@ -48,14 +48,14 @@
         <input class="btn btn-outline-primary" type="submit" value="Search" />
     </p>
     @*<p>
-        <button asp-action="CheckIn" class="btn btn-outline-primary" type="submit">Check In/Out Student</button>
-    </p>*@
+            <button asp-action="CheckIn" class="btn btn-outline-primary" type="submit">Check In/Out Student</button>
+        </p>*@
     <p>
         <button asp-action="NewDay" class="btn btn-outline-primary" type="submit">Reset Day</button>
     </p>
 }
 
-<table class="table">
+<table class="table" id="studentTable">
     <thead>
         <tr>
             <th>
@@ -85,34 +85,36 @@
     <tbody>
         @foreach (var item in Model)
         {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StudentID)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Period)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InClass)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TimeLastCheckedIn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TimeLastCheckedOut)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AttendaceStatus)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StudentID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Period)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.InClass)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TimeLastCheckedIn)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TimeLastCheckedOut)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AttendaceStatus)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
         }
     </tbody>
 </table>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/students.js"></script>

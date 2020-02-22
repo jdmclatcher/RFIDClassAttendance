@@ -1,37 +1,45 @@
 ﻿/*
- * Jonathan McLatcher
+ * Jonathan McLatcher, Harrison Boyd
  * RFID Class Attendance
  * 2020
  */
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using RFIDAttendance.Data;
+using RFIDAttendance.Hubs;
 using RFIDAttendance.Models;
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace RFIDAttendance.Controllers
 {
     public class StudentsController : Controller
     {
         private readonly StudentDbContext _context;
-        
-        public StudentsController(StudentDbContext context)
+        private readonly IHubContext<StudentHub> _hubContext;
+
+        public StudentsController(StudentDbContext context, IHubContext<StudentHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
             ViewBag.CurrentFilter = "All Periods";
             // TODO: update period view based on time
-            CheckPeriod();
+            //CheckPeriod();
         }
+
+
 
         private IActionResult CheckPeriod()
         {
             string index = "";
             // change period based on time
-            
+
 
             return FilterPeriod(index);
         }
@@ -74,10 +82,11 @@ namespace RFIDAttendance.Controllers
         }
 
         // Check in button event handling
-        public IActionResult CheckIn(long studentID)
+        public Student CheckIn(long studentID)
         {
             var students = from s in _context.Student select s;
-            foreach(Student s in students)
+            Student studentObject = null;
+            foreach (Student s in students)
             {
                 System.Diagnostics.Debug.WriteLine(s);
                 if (s.StudentID == studentID/*Convert.ToInt64(search)*/)
@@ -91,13 +100,14 @@ namespace RFIDAttendance.Controllers
                         // check out student
                         s.TimeLastCheckedOut = DateTime.Now;
                         s.InClass = false;
-                    } else
+                    }
+                    else
                     {
                         // check if has checked in before
                         if (!s.TimeLastCheckedIn.HasValue)
                         {
                             // mark tardy if after late bell and before early bell of next period
-                            if((Convert.ToInt32(DateTime.Now.Hour) > 8) && (Convert.ToInt32(DateTime.Now.Minute) > 4))
+                            if ((Convert.ToInt32(DateTime.Now.Hour) > 8) && (Convert.ToInt32(DateTime.Now.Minute) > 4))
                             {
                                 s.AttendaceStatus = "TARDY";
                             }
@@ -108,26 +118,32 @@ namespace RFIDAttendance.Controllers
                         }
                         // check in student
                         s.TimeLastCheckedIn = DateTime.Now;
-                        s.InClass = true;   
+                        s.InClass = true;
                     }
+                    studentObject = s;
+                    break;
                 }
             }
-            _context.SaveChanges(); // update Db
-            return RedirectToAction("Index");
+            if (studentObject == null)
+            {
+                throw new System.InvalidOperationException("Logfile cannot be read-only");
+            }
+            _context.SaveChanges(); // update DB
+            return studentObject;
         }
 
         // new day handling
         public IActionResult NewDay()
         {
             var students = from s in _context.Student select s;
-            foreach(Student s in students)
+            foreach (Student s in students)
             {
                 s.AttendaceStatus = "ABSENT";
                 s.InClass = false;
                 s.TimeLastCheckedIn = null;
                 s.TimeLastCheckedOut = null;
             }
-            _context.SaveChanges(); // update Db
+            _context.SaveChanges(); // update DB
             return RedirectToAction("Index");
         }
 
@@ -135,34 +151,27 @@ namespace RFIDAttendance.Controllers
         public async Task<IActionResult> Index(string sortOrder, string search)
         {
             // sorting with hyperlinks - append on top of period
-            ViewBag.NameSortParm = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewBag.NameSortParm = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewBag.StatusSortParm = sortOrder == "status" ? "status_desc" : "status";
 
             var students = from s in _context.Student select s;
 
             // TOFIX: searching won't work immediately after filtering (link still active)
             // search by name or student ID
-            if (!String.IsNullOrEmpty(search))
+            if (!string.IsNullOrEmpty(search))
             {
                 students = students.Where(s => s.Name.Contains(search)
                                        || s.StudentID.ToString().Contains(search));
             }
 
-            switch (sortOrder)
+            students = sortOrder switch
             {
-                case "name_desc":
-                    students = students.OrderByDescending(s => s.Name);
-                    break;
-                case "status":
-                    students = students.OrderBy(s => s.AttendaceStatus);
-                    break;
-                case "status_desc":
-                    students = students.OrderByDescending(s => s.AttendaceStatus);
-                    break;
-                default:  // name ascending 
-                    students = students.OrderBy(s => s.Name);
-                    break;
-            }
+                "name_desc" => students.OrderByDescending(s => s.Name),
+                "status" => students.OrderBy(s => s.AttendaceStatus),
+                "status_desc" => students.OrderByDescending(s => s.AttendaceStatus),
+                // name ascending 
+                _ => students.OrderBy(s => s.Name),
+            };
             return View(await students.ToListAsync());
         }
 
@@ -286,12 +295,23 @@ namespace RFIDAttendance.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Route("api/[controller]")]
-        // POST: api/API
+        // POST: API/api
         [HttpPost]
-        public void Post([FromBody] JArray body)
+        [Route("api/API")]
+        public HttpResponseMessage Rfid([FromBody] JArray body)
         {
-            CheckIn(body.First().SelectToken("studentID").Value<long>());
+            long studentID = body.First().SelectToken("studentID").Value<long>();
+            System.Diagnostics.Debug.WriteLine((int)studentID);
+            if (_context.Student.Any(e => e.StudentID == studentID))
+            {
+                Student s = CheckIn(studentID);
+                _hubContext.Clients.All.SendAsync("ReceiveCheckIn", studentID, s.InClass, s.TimeLastCheckedIn.Value.ToShortTimeString(), s.TimeLastCheckedOut.Value.ToShortTimeString(), s.AttendaceStatus);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+            else
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            }
         }
 
 
