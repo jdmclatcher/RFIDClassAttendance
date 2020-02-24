@@ -1,8 +1,26 @@
 ﻿/*
- * Jonathan McLatcher, Harrison Boyd
- * RFID Class Attendance
- * 2020
- */
+Project: RFID Class Attendance
+Original Authors: Jonathan McLatcher, Harrison Boyd
+Description: This class controlls the students page
+
+
+Copyright (c) 2020, Jonathan McLatcher, Harrison Boyd
+
+This file is part of RFID Class Attendance.
+
+    RFID Class Attendance is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    RFID Class Attendance is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with RFID Class Attendance.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -21,13 +39,13 @@ namespace RFIDAttendance.Controllers
 {
     public class StudentsController : Controller
     {
-        private readonly StudentDbContext _context;
-        private readonly IHubContext<StudentHub> _hubContext;
+        private readonly StudentDbContext StudentDatabaseContext;
+        private readonly IHubContext<StudentHub> AttendanceHubContext;
 
-        public StudentsController(StudentDbContext context, IHubContext<StudentHub> hubContext)
+        public StudentsController(StudentDbContext studentDatabaseContext, IHubContext<StudentHub> attendanceHubContext)
         {
-            _context = context;
-            _hubContext = hubContext;
+            StudentDatabaseContext = studentDatabaseContext;
+            AttendanceHubContext = attendanceHubContext;
             ViewBag.CurrentFilter = "All Periods";
             // TODO: update period view based on time
             //CheckPeriod();
@@ -46,7 +64,7 @@ namespace RFIDAttendance.Controllers
 
         public IActionResult FilterPeriod(string link)
         {
-            var filteredStudents = from s in _context.Student select s;
+            var filteredStudents = from s in StudentDatabaseContext.Student select s;
             // select only the correct period from db
             switch (link)
             {
@@ -84,12 +102,11 @@ namespace RFIDAttendance.Controllers
         // Check in button event handling
         public Student CheckIn(long studentID)
         {
-            var students = from s in _context.Student select s;
+            var students = from s in StudentDatabaseContext.Student select s;
             Student studentObject = null;
             foreach (Student s in students)
             {
-                System.Diagnostics.Debug.WriteLine(s);
-                if (s.StudentID == studentID/*Convert.ToInt64(search)*/)
+                if (s.StudentID == studentID)
                 {
                     // TODO: update of tardy, present, absent with bell schedule -- BASED ON STUDENT PERIOD
                     // PRESENT - if checking in by late bell
@@ -128,14 +145,14 @@ namespace RFIDAttendance.Controllers
             {
                 throw new System.InvalidOperationException("Logfile cannot be read-only");
             }
-            _context.SaveChanges(); // update DB
+            StudentDatabaseContext.SaveChanges(); // update DB
             return studentObject;
         }
 
         // new day handling
         public IActionResult NewDay()
         {
-            var students = from s in _context.Student select s;
+            var students = from s in StudentDatabaseContext.Student select s;
             foreach (Student s in students)
             {
                 s.AttendaceStatus = "ABSENT";
@@ -143,7 +160,7 @@ namespace RFIDAttendance.Controllers
                 s.TimeLastCheckedIn = null;
                 s.TimeLastCheckedOut = null;
             }
-            _context.SaveChanges(); // update DB
+            StudentDatabaseContext.SaveChanges(); // update DB
             return RedirectToAction("Index");
         }
 
@@ -154,7 +171,7 @@ namespace RFIDAttendance.Controllers
             ViewBag.NameSortParm = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewBag.StatusSortParm = sortOrder == "status" ? "status_desc" : "status";
 
-            var students = from s in _context.Student select s;
+            var students = from s in StudentDatabaseContext.Student select s;
 
             // TOFIX: searching won't work immediately after filtering (link still active)
             // search by name or student ID
@@ -183,7 +200,7 @@ namespace RFIDAttendance.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Student
+            var student = await StudentDatabaseContext.Student
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (student == null)
             {
@@ -208,8 +225,8 @@ namespace RFIDAttendance.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(student);
-                await _context.SaveChangesAsync();
+                StudentDatabaseContext.Add(student);
+                await StudentDatabaseContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(student);
@@ -223,7 +240,7 @@ namespace RFIDAttendance.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Student.FindAsync(id);
+            var student = await StudentDatabaseContext.Student.FindAsync(id);
             if (student == null)
             {
                 return NotFound();
@@ -247,8 +264,8 @@ namespace RFIDAttendance.Controllers
             {
                 try
                 {
-                    _context.Update(student);
-                    await _context.SaveChangesAsync();
+                    StudentDatabaseContext.Update(student);
+                    await StudentDatabaseContext.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -274,7 +291,7 @@ namespace RFIDAttendance.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Student
+            var student = await StudentDatabaseContext.Student
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (student == null)
             {
@@ -289,23 +306,22 @@ namespace RFIDAttendance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var student = await _context.Student.FindAsync(id);
-            _context.Student.Remove(student);
-            await _context.SaveChangesAsync();
+            var student = await StudentDatabaseContext.Student.FindAsync(id);
+            StudentDatabaseContext.Student.Remove(student);
+            await StudentDatabaseContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         // POST: API/api
         [HttpPost]
         [Route("api/API")]
-        public HttpResponseMessage Rfid([FromBody] JArray body)
+        public HttpResponseMessage RFIDScanReciever([FromBody] JArray postBody)
         {
-            long studentID = body.First().SelectToken("studentID").Value<long>();
-            System.Diagnostics.Debug.WriteLine((int)studentID);
-            if (_context.Student.Any(e => e.StudentID == studentID))
+            long studentID = postBody.First().SelectToken("studentID").Value<long>();
+            if (StudentDatabaseContext.Student.Any(e => e.StudentID == studentID))
             {
-                Student s = CheckIn(studentID);
-                _hubContext.Clients.All.SendAsync("ReceiveCheckIn", studentID, s.InClass, s.TimeLastCheckedIn.Value.ToShortTimeString(), s.TimeLastCheckedOut.Value.ToShortTimeString(), s.AttendaceStatus);
+                Student student = CheckIn(studentID);
+                AttendanceHubContext.Clients.All.SendAsync("ReceiveCheckIn", studentID, student.InClass, student.TimeLastCheckedIn.Value.ToShortTimeString(), student.TimeLastCheckedOut.Value.ToShortTimeString(), student.AttendaceStatus);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
             else
@@ -317,7 +333,7 @@ namespace RFIDAttendance.Controllers
 
         private bool StudentExists(int id)
         {
-            return _context.Student.Any(e => e.Id == id);
+            return StudentDatabaseContext.Student.Any(e => e.Id == id);
         }
     }
 }

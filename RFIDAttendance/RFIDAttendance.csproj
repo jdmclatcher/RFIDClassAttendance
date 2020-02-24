@@ -5,7 +5,6 @@
     <Platforms>AnyCPU;x64;x86;ARM;ARM64</Platforms>
     <StartupObject>RFIDAttendance.Program</StartupObject>
     <Product>RFID Attendance</Product>
-    <!--<RuntimeIdentifier>win-arm</RuntimeIdentifier>-->
   </PropertyGroup>
 
   <ItemGroup>

@@ -29,7 +29,6 @@ namespace RFIDScanner
 			}
 		}
 
-
 		public event EventHandler CardDetected;
 	}
 }
