@@ -47,23 +47,49 @@ namespace RFIDAttendance.Controllers
             StudentDatabaseContext = studentDatabaseContext;
             AttendanceHubContext = attendanceHubContext;
             ViewBag.CurrentFilter = "All Periods";
-            // TODO: update period view based on time
-            //CheckPeriod();
         }
 
-
-
-        private IActionResult CheckPeriod()
+        // TODO: implementation of this
+        // returns filter action based on current period
+        public IActionResult CheckPeriod()
         {
-            string index = "";
+            System.Diagnostics.Debug.WriteLine("CheckPeriod called");
+            DateTime time = DateTime.Now;
             // change period based on time
-
-
-            return FilterPeriod(index);
+            if ((time.Hour == 8 && time.Minute >= 15) || (time.Hour == 9 && time.Minute <= 20))
+            {
+                return FilterPeriod("1");
+            }
+            else if ((time.Hour == 9 && time.Minute >= 21) || (time.Hour == 10 && time.Minute <= 15))
+            {
+                return FilterPeriod("2");
+            }
+            else if ((time.Hour == 10 && time.Minute >= 50) || (time.Hour == 11 && time.Minute <= 42))
+            {
+                return FilterPeriod("3");
+            }
+            else if ((time.Hour == 11 && time.Minute >= 43) || (time.Hour == 12 && time.Minute <= 39))
+            {
+                return FilterPeriod("4");
+            }
+            else if ((time.Hour == 1 && time.Minute >= 36) || (time.Hour == 2 && time.Minute <= 32))
+            {
+                System.Diagnostics.Debug.WriteLine("It's 5th Period.");
+                return FilterPeriod("5");
+            }
+            else if ((time.Hour == 2 && time.Minute >= 33) || (time.Hour == 3 && time.Minute <= 30))
+            {
+                return FilterPeriod("6");
+            }
+            else
+            {
+                return FilterPeriod("");
+            }
         }
 
         public IActionResult FilterPeriod(string link)
         {
+            System.Diagnostics.Debug.WriteLine("FiterPeriod called");
             var filteredStudents = from s in StudentDatabaseContext.Student select s;
             // select only the correct period from db
             switch (link)

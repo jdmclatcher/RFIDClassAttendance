@@ -4,13 +4,16 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Class List - @(ViewBag.CurrentFilter == null ? "All Periods" : ViewBag.CurrentFilter)</h1> @*TODO append period based on filters (use ViewBag)*@
+<h1>Class List - @(ViewBag.CurrentFilter == null ? "All Periods" : ViewBag.CurrentFilter)</h1>
 
 <table class="table">
     <thead>
         @using (Html.BeginForm())
         {
             <tr>
+                <th>
+                    <button class="btn btn-outline-secondary" asp-action="CheckPeriod">Current Period</button>
+                </th>
                 <th>
                     <button class="btn btn-outline-secondary" name="link" value="1" asp-action="FilterPeriod">Period 1</button>
                 </th>
@@ -47,9 +50,6 @@
         Find by Name or ID: @Html.TextBox("Search", null, new { @class = "form-control", @placeholder = "Search" })
         <input class="btn btn-outline-primary" type="submit" value="Search" />
     </p>
-    @*<p>
-            <button asp-action="CheckIn" class="btn btn-outline-primary" type="submit">Check In/Out Student</button>
-        </p>*@
     <p>
         <button asp-action="NewDay" class="btn btn-outline-primary" type="submit">Reset Day</button>
     </p>
